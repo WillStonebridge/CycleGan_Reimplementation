@@ -1,0 +1,6 @@
+slurm/
+__pycache__/
+.ipynb_checkpoints/
+datasets/*/**
+__pycache__
+__init__.py
