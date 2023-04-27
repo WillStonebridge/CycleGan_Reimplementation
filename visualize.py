@@ -165,8 +165,12 @@ class Insights():
                 f.write(f"X: {args['setX']}, Y: {args['setY']}")
                 f.close()
 
-    def saveModel():
-        pass
+    def saveModel(self, epoch, batch, gan):
+        save_dir = f"{self.savePath}/e{epoch}b{batch}"
+        os.mkdir(save_dir)
+        
+        torch.save(gan.state_dict(), f"{save_dir}/model.pt")
+        plt.savefig(f"{save_dir}/insights.jpg")
 
 if __name__ == "__main__":
     print("hello")

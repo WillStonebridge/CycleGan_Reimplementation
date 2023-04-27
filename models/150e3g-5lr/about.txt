@@ -1,0 +1,5 @@
+NAME: 150e3g-5lr
+Basics - 5e-5 lr, 8 batches, 150 epochs
+Coefficients - 1 adv, 10 cyc, 1 idt
+Architectures - 3 glayers, 4 dlayers
+X: landscape, Y: monet

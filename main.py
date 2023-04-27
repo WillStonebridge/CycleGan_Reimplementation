@@ -8,6 +8,7 @@ from datasets.datasets import *
 from GAN.CycleGAN import *
 from visualize import *
 import argparse
+import time
 
 #COMMAND LINE
 ap = argparse.ArgumentParser()
@@ -35,11 +36,12 @@ cyc = float(args["cyc_coeff"])
 idt = float(args["idt_coeff"])
 setX = args["setX"]
 setY = args["setY"]
+savefreq = 45 #how often is the model saved in minutes
 name = args["name"]
 
-print(learning_rate)
-
 if __name__ == "__main__":
+    print(name)
+
     #DATASET
     dataset = Dataset(setX, setY)
     dataloader = dataset.get_loader(batch_size, shuffle=True)
@@ -51,11 +53,14 @@ if __name__ == "__main__":
                 coeff_forward=cyc,
                 coeff_backward=cyc,
                 coeff_idt = idt)
-    #gan.to(device)
+    gan.to(device)
 
     torch.cuda.empty_cache() #free some memory up
     insights = Insights(len(dataloader), epochs, name)
     insights.instantiateSaveFile(args)
+    start_time = time.time()
+    save_times = [(start_time + x*savefreq*60) for x in range(1000)]
+    curr_save = 0 #what save is the program on
 
     #TRAINING
     for epoch in range(epochs):
@@ -67,7 +72,17 @@ if __name__ == "__main__":
             torch.cuda.empty_cache() #free some memory up
 
             if i % 5 == 0:
-                insights.update_insights(gan, i, epoch)
+                insights.update_insights(gan, i, epoch) #update the graph
+
+                if save_times[curr_save] < time.time():
+                    curr_save += 1
+                    insights.saveModel(epoch, i, gan)
+
+    insights.saveModel(epochs, batch_size, gan)
+
+
+
+
 
 
     
