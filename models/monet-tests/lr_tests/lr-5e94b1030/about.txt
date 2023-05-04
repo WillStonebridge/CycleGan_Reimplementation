@@ -1,0 +1,5 @@
+NAME: lr-5
+Basics - 2e-5 lr, 1 batches, 150 epochs, decay at 100
+Coefficients - 1 adv, 10 cyc, 0.5 idt
+Architectures - 6 glayers, 4 dlayers
+X: landscape, Y: monet

@@ -1,5 +1,0 @@
-NAME: 3g
-Basics - 5e-07 lr, 8 batches, 100 epochs
-Coefficients - 1 adv, 10 cyc, 1 idt
-Architectures - 3 glayers, 4 dlayers
-X: landscape, Y: monet

@@ -1,7 +1,7 @@
 import os
 
 if __name__ == "__main__":
-    set1 = os.listdir("mnist/train")
+    set1 = os.listdir("landscape/train")
     set2 = os.listdir("svhn/train")
 
     print(len(set1))

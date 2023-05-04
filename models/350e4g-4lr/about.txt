@@ -1,5 +1,0 @@
-NAME: 350e4g-4lr
-Basics - 5e-4 lr, 8 batches, 250 epochs
-Coefficients - 1 adv, 10 cyc, 1 idt
-Architectures - 4 glayers, 4 dlayers
-X: monkey, Y: people

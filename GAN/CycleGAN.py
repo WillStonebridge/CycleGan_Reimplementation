@@ -1,20 +1,22 @@
 import torch
+from torch import optim
 
 from GAN.generator import Generator
 from GAN.discriminator import *
 from GAN.FakeBuffer import *
+import itertools
 
 """from generator import Generator
 from discriminator import *"""
 
 class cycleGAN(nn.Module):
 
-    def __init__(self, device, lr, g_layers = 6, d_layers = 4, g_filters = 64, d_filters = 64, coeff_adv = 1, coeff_forward = 1, coeff_backward = 1, coeff_idt = 1):
+    def __init__(self, device, lr, g_layers = 6, d_layers = 4, g_filters = 64, d_filters = 64, coeff_adv = 1, coeff_forward = 1, coeff_backward = 1, coeff_idt = 1, epochs=200, e_decay = 100):
         super(cycleGAN, self).__init__()
 
         #NETWORKS
-        self.G_X = Generator(3, 3, g_layers)
-        self.G_Y = Generator(3, 3, g_layers)
+        self.G_X = Generator(3, 3, g_layers, enc_kern=3)
+        self.G_Y = Generator(3, 3, g_layers, enc_kern=3)
         self.D_X = Discriminator(3, d_layers, d_filters)
         self.D_Y = Discriminator(3, d_layers, d_filters)
 
@@ -36,10 +38,17 @@ class cycleGAN(nn.Module):
         self.loss_G = None
 
         #OPTIMIZERS
-        self.opt_Gx = torch.optim.Adam(self.G_X.parameters(), lr=lr)
-        self.opt_Gy = torch.optim.Adam(self.G_Y.parameters(), lr=lr)
-        self.opt_Dx = torch.optim.Adam(self.D_X.parameters(), lr=lr)
-        self.opt_Dy = torch.optim.Adam(self.D_Y.parameters(), lr=lr)
+        self.opt_G = optim.Adam(itertools.chain(self.G_X.parameters(), self.G_Y.parameters()), lr=lr)
+        self.opt_D = optim.Adam(itertools.chain(self.D_X.parameters(), self.D_Y.parameters()), lr=lr)
+
+        #SCHEDULERS
+        def lin_decay(epoch):
+            decay = 1.0
+            if epoch > e_decay: #only start decaying at epoch e_decay
+                decay = 1.0 - ((epochs - e_decay) - (epoch - e_decay)) / (epochs - e_decay)
+            return decay
+        self.scheduler_G = optim.lr_scheduler.LambdaLR(self.opt_G, lr_lambda=lin_decay)
+        self.scheduler_D = optim.lr_scheduler.LambdaLR(self.opt_D, lr_lambda=lin_decay)
 
         self.device = device
 
@@ -85,6 +94,7 @@ class cycleGAN(nn.Module):
 
     def adjust_D_coeffs(self):
         instability_bound = 0.8 #the bound at which we determine the discriminator loss to be unstable
+        stability_bound = 0.7
         favor = 0.2
         discourage = 1.8
         if self.loss_Dx_find_real > instability_bound:
@@ -93,9 +103,10 @@ class cycleGAN(nn.Module):
         elif self.loss_Dx_find_fake > instability_bound: 
             self.coeff_Dx_real = favor #favor classifying real
             self.coeff_Dx_fake = discourage
-        else: #Dx is stable
+        elif self.loss_Dx_find_real < stability_bound and self.loss_Dx_find_fake < stability_bound: #Dx is stable
             self.coeff_Dx_real = 1 #favor neither
             self.coeff_Dx_fake = 1
+        
 
         if self.loss_Dy_find_real > instability_bound:
             self.coeff_Dy_real = discourage #favor classifying fake
@@ -103,7 +114,7 @@ class cycleGAN(nn.Module):
         elif self.loss_Dy_find_fake > instability_bound: 
             self.coeff_Dy_real = favor #favor classifying real
             self.coeff_Dy_fake = discourage
-        else: #Dx is stable
+        elif self.loss_Dy_find_real < stability_bound and self.loss_Dy_find_fake < stability_bound:
             self.coeff_Dy_real = 1 #favor neither
             self.coeff_Dy_fake = 1
     
@@ -119,8 +130,8 @@ class cycleGAN(nn.Module):
         self.cyc_loss = self.coeff_forw * self.cyc_X_loss + self.coeff_back * self.cyc_Y_loss
 
         #IDENTITY LOSS
-        self.idt_y_loss = self.l1loss(self.generated_X, self.real_Y)
-        self.idt_x_loss = self.l1loss(self.generated_Y, self.real_X)
+        self.idt_y_loss = self.l1loss(self.G_X(self.real_Y), self.real_Y)
+        self.idt_x_loss = self.l1loss(self.G_Y(self.real_X), self.real_X)
         self.idt_loss = self.coeff_idt * (self.idt_x_loss + self.idt_y_loss)
 
         self.loss_G = self.Gx_loss + self.Gy_loss + self.cyc_loss + self.idt_loss
@@ -133,13 +144,10 @@ class cycleGAN(nn.Module):
         self.grad_active(self.D_X, False)
         self.grad_active(self.D_Y, False)
 
-        self.opt_Gx.zero_grad() #the gradient is set to zero
-        self.opt_Gy.zero_grad()
+        self.opt_G.zero_grad() #the gradient is set to zero
         self.backward_G() #get the gradient
         #if self.loss_Dx_find_fake < 0.4 and self.loss_Dx_find_real < 0.4: #if Dx is stable
-        self.opt_Gx.step() #update parameters
-        #if self.loss_Dy_find_fake < 0.4 and self.loss_Dy_find_real < 0.4: #if Dy is stable
-        self.opt_Gy.step() #update parameters
+        self.opt_G.step() #update parameters
 
         #Turn back on gradient calculations for discriminators
         self.grad_active(self.D_X, True)
@@ -148,8 +156,11 @@ class cycleGAN(nn.Module):
 
     def optimize_D(self):
         self.backward_D()
-        self.opt_Dx.step()
-        self.opt_Dy.step()
+        self.opt_D.step()
+
+    def step_lr(self):
+        self.scheduler_G.step()
+        self.scheduler_D.step()
 
     def grad_active(self, net, On):
         for parameter in net.parameters(): 
@@ -166,7 +177,7 @@ class cycleGAN(nn.Module):
 mse_loss = nn.MSELoss() #defined outside of the function to avoid initialization on every call
 mse_loss.to(torch.device("cuda"))
 
-def getGANLoss(D_output, D_input_is_real):
+def getGANLoss(D_output, output_is_real):
     """
         Takes the output of a discriminator on a image and a boolean representing whether the original image
         was fake or not
@@ -174,7 +185,7 @@ def getGANLoss(D_output, D_input_is_real):
         returns the MSE of the discriminator output and expected discriminator output
     """
 
-    if D_input_is_real:
+    if output_is_real:
         expectation = torch.ones(D_output.shape)
     else:
         expectation = torch.zeros(D_output.shape)

@@ -1,0 +1,5 @@
+NAME: 5d6g
+Basics - 0.0002 lr, 8 batches, 130 epochs, decay at 70
+Coefficients - 1 adv, 10 cyc, 0.7 idt
+Architectures - 6 glayers, 5 dlayers
+X: landscape, Y: monet

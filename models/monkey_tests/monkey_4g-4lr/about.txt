@@ -1,5 +1,0 @@
-NAME: monkey_4g-4lr
-Basics - 5e-6 lr, 8 batches, 100 epochs
-Coefficients - 1 adv, 10 cyc, 1 idt
-Architectures - 4 glayers, 4 dlayers
-X: monkey, Y: people

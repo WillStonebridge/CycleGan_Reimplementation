@@ -1,0 +1,5 @@
+NAME: 200e
+Basics - 0.0002 lr, 8 batches, 200 epochs, decay at 100
+Coefficients - 1 adv, 10 cyc, 0.5 idt
+Architectures - 6 glayers, 4 dlayers
+X: landscape, Y: monet

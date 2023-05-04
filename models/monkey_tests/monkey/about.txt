@@ -1,0 +1,5 @@
+NAME: monkey
+Basics - 0.0002 lr, 1 batches, 150 epochs, decay at 100
+Coefficients - 1 adv, 10 cyc, 0 idt
+Architectures - 6 glayers, 4 dlayers
+X: monkey, Y: people

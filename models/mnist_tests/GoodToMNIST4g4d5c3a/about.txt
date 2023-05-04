@@ -1,0 +1,5 @@
+NAME: mnist4g4d5c3a
+Basics - 0.0002 lr, 8 batches, 130 epochs, decay at 70
+Coefficients - 3 adv, 5 cyc, 0 idt
+Architectures - 4 glayers, 4 dlayers
+X: mnist, Y: svhn
