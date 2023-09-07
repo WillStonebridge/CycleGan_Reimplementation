@@ -1,5 +1,0 @@
-NAME: 256p3g5d-5lr
-Basics - 5e-05 lr, 4 batches, 150 epochs
-Coefficients - 1 adv, 10 cyc, 1 idt
-Architectures - 3 glayers, 5 dlayers
-X: landscape, Y: monet

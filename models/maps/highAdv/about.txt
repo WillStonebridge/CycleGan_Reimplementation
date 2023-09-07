@@ -1,0 +1,5 @@
+NAME: highAdv
+Basics - 0.0002 lr, 1 batches, 200 epochs, decay at 100
+Coefficients - 2 adv, 10 cyc, 0.5 idt
+Architectures - 4 glayers, 5 dlayers
+X: aerial, Y: gmaps

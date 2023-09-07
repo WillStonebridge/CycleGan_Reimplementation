@@ -38,7 +38,7 @@ cyc = float(args["cyc_coeff"])
 idt = float(args["idt_coeff"])
 setX = args["setX"]
 setY = args["setY"]
-savefreq = 50 #how often is the model saved in minutes
+savefreq = 25 #how often is the model saved in minutes
 name = args["name"]
 
 if __name__ == "__main__":

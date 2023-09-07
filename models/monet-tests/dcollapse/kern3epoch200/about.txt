@@ -1,5 +1,0 @@
-NAME: kern3epoch200
-Basics - 2e-5 lr, 8 batches, 200 epochs, decay at 100
-Coefficients - 1 adv, 10 cyc, 0.5 idt
-Architectures - 6 glayers, 4 dlayers
-X: landscape, Y: monet

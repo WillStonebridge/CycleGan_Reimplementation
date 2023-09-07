@@ -1,6 +1,0 @@
-batch size,2e-4,2e-5,2e-6,2e-7
-2,models/prep2g4d-4lr2b,lr-5b2,models/prep2g4d-6lr2b,x
-4,lr-4b4,lr-5b4,lr-6b4,x
-8,lr-4b8,Gs,models/prep2g4d-6lr,x
-16,lr-4b16,lr-5b16,lr-6b16,x
-All architectures are 2g4d
